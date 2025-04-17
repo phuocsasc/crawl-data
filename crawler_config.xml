@@ -1,0 +1,93 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@1505.vea_4b_20a_4a_495">
+  <actions>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@2.2221.vc657003fb_d93"/>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@2.2221.vc657003fb_d93">
+      <jobProperties/>
+      <triggers/>
+      <parameters/>
+      <options/>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+  </actions>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <org.jenkinsci.plugins.workflow.job.properties.DisableConcurrentBuildsJobProperty>
+      <abortPrevious>false</abortPrevious>
+    </org.jenkinsci.plugins.workflow.job.properties.DisableConcurrentBuildsJobProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>month</name>
+          <description>Workflow crawler_baohiemxahoi có 2 biến môi trường là --month, --year. Khi set --month 3 --year 2024 thì chương trình sẽ lấy hết dữ liệu từ tháng 1 đến tháng 3 năm 2024 (dữ liệu được lấy về bao gồm tháng 1,2,3). Nếu không set biến môi trường thì nó sẽ nhận --month, --year theo thời gian thực (real time).
+</description>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>year</name>
+          <description>Workflow crawler_baohiemxahoi có 2 biến môi trường là --month, --year. Khi set --month 3 --year 2024 thì chương trình sẽ lấy hết dữ liệu từ tháng 1 đến tháng 3 năm 2024 (dữ liệu được lấy về bao gồm tháng 1,2,3). Nếu không set biến môi trường thì nó sẽ nhận --month, --year theo thời gian thực (real time).</description>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>months_ago</name>
+          <description>Workflow crawler_hoadondientu có 2 biến môi trường là --months-ago, --crawl-months. Khi set --months-ago 1 --crawl-months 3 thì chương trình sẽ lùi 1 tháng so với tháng hiện có trên website để lấy dữ liệu và tiếp tục như thế đến hết 3 lần.</description>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>crawl_months</name>
+          <description>Workflow crawler_hoadondientu có 2 biến môi trường là --months-ago, --crawl-months. Khi set --months-ago 1 --crawl-months 3 thì chương trình sẽ lùi 1 tháng so với tháng hiện có trên website để lấy dữ liệu và tiếp tục như thế đến hết 3 lần.</description>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>company</name>
+          <description>Tên công ty để chạy đơn lẻ.</description>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers>
+        <hudson.triggers.TimerTrigger>
+          <spec>H H * * *</spec>
+        </hudson.triggers.TimerTrigger>
+      </triggers>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@4018.vf02e01888da_f">
+    <script>pipeline {
+    agent any
+
+    stages {
+        stage(&apos;Run Crawler Workflows&apos;) {
+            steps {
+                echo &apos;Running...&apos;
+                script {      
+                    def company = &apos;None&apos;              
+                    if (env.company != &apos;&apos;) {
+                        company = env.company
+                    }
+                    sh &quot;ssh-keygen -f \&quot;/var/jenkins_home/.ssh/known_hosts\&quot; -R \&quot;crawler_app\&quot;&quot;
+                    if (env.month == &apos;&apos; &amp;&amp; env.year == &apos;&apos; &amp;&amp; env.months_ago == &apos;&apos; &amp;&amp; env.crawl_months == &apos;&apos;){
+                        sh &quot;sshpass -p root ssh -o StrictHostKeyChecking=no root@crawler_app \&quot;cd /app/ &amp;&amp; source venv/bin/activate &amp;&amp; source .env &amp;&amp; python3.12 -m app.crawler_app --company ${company}\&quot;&quot;
+                    }
+                    else if (env.month != &apos;&apos; &amp;&amp; env.year != &apos;&apos; &amp;&amp; env.months_ago == &apos;&apos; &amp;&amp; env.crawl_months == &apos;&apos;){
+                        sh &quot;sshpass -p root ssh -o StrictHostKeyChecking=no root@crawler_app \&quot;cd /app/ &amp;&amp; source venv/bin/activate &amp;&amp; source .env &amp;&amp; python3.12 -m app.crawler_app --month ${env.month} --year ${env.year} --company ${company}\&quot;&quot;
+                    }
+                    else if (env.month == &apos;&apos; &amp;&amp; env.year == &apos;&apos; &amp;&amp; env.months_ago != &apos;&apos; &amp;&amp; env.crawl_months != &apos;&apos;){
+                        sh &quot;sshpass -p root ssh -o StrictHostKeyChecking=no root@crawler_app \&quot;cd /app/ &amp;&amp; source venv/bin/activate &amp;&amp; source .env &amp;&amp; python3.12 -m app.crawler_app --months-ago ${env.months_ago} --crawl-months ${env.crawl_months} --company ${company}\&quot;&quot;
+                    }
+                    else if (env.month != &apos;&apos; &amp;&amp; env.year != &apos;&apos; &amp;&amp; env.months_ago != &apos;&apos; &amp;&amp; env.crawl_months != &apos;&apos;){
+                        sh &quot;sshpass -p root ssh -o StrictHostKeyChecking=no root@crawler_app \&quot;cd /app/ &amp;&amp; source venv/bin/activate &amp;&amp; source .env &amp;&amp; python3.12 -m app.crawler_app --month ${env.month} --year ${env.year} --months-ago ${env.months_ago} --crawl-months ${env.crawl_months} --company ${company}\&quot;&quot;
+                    }
+                    
+                }
+            }
+        }
+    }
+}
+</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

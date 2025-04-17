@@ -1,0 +1,61 @@
+version: '3.8'  
+
+services:
+  crawler:
+    build:
+      context: .
+      dockerfile: dockerfile
+    privileged: true
+    container_name: crawler_app
+    depends_on:
+      - postgres
+    networks:
+      - app-network
+    environment:
+      - SCOPES=${SCOPES}
+      - SERVICE_ACCOUNT_FILE=${SERVICE_ACCOUNT_FILE}
+      - API_KEY_AUTOCAPTCHA=${API_KEY_AUTOCAPTCHA}
+      - API_KEY_ANTICAPTCHA=${API_KEY_ANTICAPTCHA}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - WEBHOOK_URL_BHXH=${WEBHOOK_URL_BHXH}
+      - WEBHOOK_URL_THUEDT=${WEBHOOK_URL_THUEDT}
+      - WEBHOOK_URL_HDDT=${WEBHOOK_URL_HDDT}
+
+  jenkins:
+    build:
+      context: .
+      dockerfile: dockerfile.jenkins
+    container_name: jenkins
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - ./jenkins_home:/var/jenkins_home
+    networks:
+      - app-network
+
+  postgres:
+    image: postgres:13
+    container_name: postgres
+    environment:
+      POSTGRES_USER: "${DB_USER}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
+      POSTGRES_DB: "${DB_NAME}"
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d
+    networks:
+      - app-network
+
+networks:
+  app-network:
+
+volumes:
+  jenkins_home:
+  postgres_data:

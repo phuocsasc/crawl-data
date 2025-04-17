@@ -1,0 +1,17 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+{
+  "name": "esigner.chrome.tct.gdt.gov.vn",
+  "description": "Ứng dụng ký điện tử",
+  "path": "eSigner.exe", 
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://knldjmfmopnpolahpmmgbagdohdnhkik/",
+	"chrome-extension://ckjefchnfjhjfedoccjbhjpbncimppeg/",
+	"chrome-extension://eacnlhofpemkkcphjdpiiphglgpofjlj/",
+	"chrome-extension://ojkemejbppgnpppnjkdcfmdnfkhenphm/",
+	"chrome-extension://ekaaenaocpheoabajfdnkhiibfmfmloo/"
+  ]
+}
